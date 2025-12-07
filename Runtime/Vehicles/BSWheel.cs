@@ -145,13 +145,13 @@ public class BSWheel : MonoBehaviour
 
             currSuspLength = hit.distance - (tireD / 2f);
             float compression = Mathf.Clamp(suspRL - currSuspLength, 0, suspRL);
-            float suspSpeed = (prevSuspLength - currSuspLength) / Time.fixedDeltaTime;
+            float suspSpeed = (currSuspLength - prevSuspLength) / Time.fixedDeltaTime;
             prevSuspLength = currSuspLength;
             contactPoint = hit.point;
             contactNormal = hit.normal;
 
-            Vector3 springForce = compression * suspK * contactNormal;
-            Vector3 dampingForce = suspD * suspSpeed * contactNormal;
+            Vector3 springForce = suspK * compression * contactNormal;
+            Vector3 dampingForce = -suspD * suspSpeed * contactNormal;
 
             suspForce = springForce + dampingForce;
             carRB.AddForceAtPosition(suspForce, rayOrigin, ForceMode.Force);
