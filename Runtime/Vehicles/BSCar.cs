@@ -8,7 +8,6 @@ public class BSCar : MonoBehaviour
 {
     // Debugging
     public bool isLogInputs;
-    public bool isRenderSuspension;
     public bool isKeyboardControl;
 
     // Prefabs and Visual Components
@@ -139,10 +138,6 @@ public class BSCar : MonoBehaviour
         HandleInput();
         foreach (BSWheel w in wheels) w.UpdateSuspensionForces();
         foreach (BSWheel w in wheels) w.UpdateTireForces();
-
-        if (isRenderSuspension)
-            for (int i = 0; i < wheels.Length; i++) 
-                wheels[i].RenderSuspension();
     }
 
 

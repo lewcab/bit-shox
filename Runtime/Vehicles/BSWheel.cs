@@ -32,14 +32,16 @@ public class BSWheel : MonoBehaviour
     private float currSuspLength;   // current length of suspension
     private float prevSuspLength;   // previous length of suspension
     private Vector3 suspForce;      // current force exerted by suspension onto the car
+    private Vector3 latForce;       // current lateral force exerted by tire onto the car
 
     private Vector3 contactPoint;   // point of contact with ground
     private Vector3 contactNormal;  // normal at contact point
     private Vector3 wheelVelocity;  // velocity of the wheel at contact point
 
 
-    void FixedUpdate()
+    void Update()
     {
+        RenderSuspension();
         UpdateWheelPosition();
         UpdateWheelRotation();
     }
@@ -165,7 +167,7 @@ public class BSWheel : MonoBehaviour
     /// <summary>
     /// Render the suspension raycast for debugging
     /// </summary>
-    public void RenderSuspension()
+    private void RenderSuspension()
     {
         Vector3 rayOrigin = csWheel.position;
         Vector3 rayDirection = csCar.TransformDirection(suspDirection);
@@ -195,18 +197,18 @@ public class BSWheel : MonoBehaviour
         float lateralVelocity = Vector3.Dot(wheelVelocity, lateralDir);
         float load = suspForce.magnitude;
 
-        Vector3 lateralForce = -lateralDir * lateralVelocity * tireFC * load;
-        lateralForce = Vector3.ProjectOnPlane(lateralForce, contactNormal);
+        latForce = -lateralDir * lateralVelocity * tireFC * load;
+        latForce = Vector3.ProjectOnPlane(latForce, contactNormal);
 
         // Artificially limit lateral force to prevent flipping
         // TODO: Replace with physical model
         float maxLateralForce = load * tireFC;
-        if (lateralForce.magnitude > maxLateralForce)
-            lateralForce = lateralForce.normalized * maxLateralForce;
+        if (latForce.magnitude > maxLateralForce)
+            latForce = latForce.normalized * maxLateralForce;
 
-        carRB.AddForceAtPosition(lateralForce, contactPoint);
+        carRB.AddForceAtPosition(latForce, contactPoint);
 
-        Debug.DrawRay(contactPoint, lateralForce / carRB.mass, Color.red);
+        Debug.DrawRay(contactPoint, latForce / carRB.mass, Color.red);
     }
 
     
@@ -229,7 +231,7 @@ public class BSWheel : MonoBehaviour
         float wheelRadius = tireD / 2f;
         float linearVelocity = Vector3.Dot(wheelVelocity, csRolling.right);
         float angularVelocity = linearVelocity / wheelRadius;
-        float angularDisplacement = angularVelocity * Time.fixedDeltaTime;
+        float angularDisplacement = angularVelocity * Time.deltaTime;
 
         wheelObj.localRotation *= Quaternion.Euler(0f, 0f, -angularDisplacement * Mathf.Rad2Deg);
     }
@@ -271,7 +273,7 @@ public class BSWheel : MonoBehaviour
         Vector3 force = csRolling.right * magnitude;
         force = Vector3.ProjectOnPlane(force, contactNormal);
         Vector3 position = csRolling.position;
-        carRB.AddForceAtPosition(force, csRolling.position);
+        carRB.AddForceAtPosition(force, position);
         Debug.DrawRay(position, force / carRB.mass, Color.blue);
     }
 
@@ -295,7 +297,7 @@ public class BSWheel : MonoBehaviour
         Vector3 force = csWheel.right * magnitude;
         force = Vector3.ProjectOnPlane(force, contactNormal);
         Vector3 position = csRolling.position;
-        carRB.AddForceAtPosition(force, csRolling.position);
+        carRB.AddForceAtPosition(force, position);
         Debug.DrawRay(position, force/carRB.mass, Color.yellow);
     }
 
