@@ -253,7 +253,9 @@ public class BSWheel : MonoBehaviour
     /// </summary>
     /// <param name="input">Trigger input in range [0, 1]</param>
     /// <param name="driveType">The drive type of the car (FWD, RWD, AWD)</param>
-    public void Throttle(float input, BSCar.DriveType driveType)
+    /// <param name="maxForce">The maximum force applied by the wheel</param>
+    /// <param name="topSpeed">The maximum speed of the car in km/h</param>
+    public void Throttle(float input, BSCar.DriveType driveType, float maxForce, float topSpeed)
     {
         if (
             driveType == BSCar.DriveType.FWD && !isFront ||
@@ -261,14 +263,16 @@ public class BSWheel : MonoBehaviour
             !isGrounded
         ) return;
 
-        float maxForce = 8000f;
+        float currentSpeed = carRB.velocity.magnitude;
+
+        if (currentSpeed >= topSpeed / 3.6f) return;
 
         float magnitude = input * maxForce;
         Vector3 force = csRolling.right * magnitude;
         force = Vector3.ProjectOnPlane(force, contactNormal);
         Vector3 position = csRolling.position;
         carRB.AddForceAtPosition(force, csRolling.position);
-        Debug.DrawRay(position, force/carRB.mass, Color.blue);
+        Debug.DrawRay(position, force / carRB.mass, Color.blue);
     }
 
 
