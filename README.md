@@ -19,3 +19,10 @@ If you want to setup a car from scratch, do the following:
 3. Adjust the `BSCar` script values to your desired vehicle specifications in Unity's Inspector.
 
 **Note:** The `BSCar` script does not have its own camera or camera controller by default. You will need to add your own.
+
+## Project Structure
+
+- `Editor`: Contains all the editor scripts, primarily used for setting up controls.
+- `Runtime`: Contains all the core scripts, including `BSCar` and `BSWheel`.
+- `Samples`: Contains sample vehicles and scenes to demonstrate the functionality of Bit Shox. Also contains low fidelity models for wheels and bodies.
+- `Documentation~`: Contains more formal documentation, including Physics explanations.
