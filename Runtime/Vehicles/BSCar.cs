@@ -85,6 +85,7 @@ public class BSCar : MonoBehaviour
         body.transform.SetParent(car, false);
         body.transform.localScale = new(wheelbase, bodyThickness, track);
         body.transform.localPosition = new Vector3(0f, (bodyThickness/2) - suspensionDepth, 0f);
+        body.layer = LayerMask.NameToLayer("Ignore Raycast");
 
         // Add Rigidbody to the car body
         carRB = car.gameObject.AddComponent<Rigidbody>();
