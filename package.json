@@ -1,0 +1,33 @@
+{
+  "name": "com.lewcab.bit-shox",
+  "version": "0.1.0",
+  "displayName": "Bit Shox",
+  "description": "A realistic vehicle simulation system in Unity.",
+  "license": "MIT",
+  "unity": "2022.3",
+  "dependencies": {
+    "com.unity.probuilder": "5.2.4"
+  },
+  "samples": [
+    {
+      "displayName": "Cars",
+      "description": "Sample car prefabs. Includes a basic sports car and truck.",
+      "path": "Samples/Cars"
+    },
+    {
+      "displayName": "Scenes",
+      "description": "Sample scenes demonstrating Bit Shox features over various environments.",
+      "path": "Samples/Scenes"
+    }
+  ],
+  "keywords": [
+    "vehicle",
+    "car",
+    "racing"
+  ],
+  "author": {
+    "name": "Lewis Cabal",
+    "email": "lewcabal@gmail.com",
+    "url": "https://lewcab.github.io/"
+  }
+}
