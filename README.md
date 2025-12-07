@@ -6,7 +6,7 @@ A realistic vehicle simulation system in Unity. Bit Shox was developed in Unity 
 
 First, you must ensure the controls are setup properly. This can be done in Unity, by selecting `Tools > Bit Shox > Configure Vehicle Controls`.
 
-After the controls are set up, setting up a car is as easy as dragging and dropping a prefab from `Bit Shox/Samples/Car Setups/` into your scene, and adjusting the parameters from there. These prefabs include a Camera setup which is controlled by the Right Joystick. Other controls and setup can be seen below.
+After the controls are set up, setting up a car is as easy as dragging and dropping a prefab from `Samples/Cars/` into your scene, and adjusting the parameters from there. These prefabs include a Camera setup which is controlled by the Right Joystick. Other controls and setup can be seen below.
 
 - Throttle: Right Trigger (W)
 - Brakes: Left Trigger (S)
