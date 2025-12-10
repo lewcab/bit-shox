@@ -33,6 +33,8 @@ public class BSWheel : MonoBehaviour
     private float prevSuspLength;   // previous length of suspension
     private Vector3 suspForce;      // current force exerted by suspension onto the car
     private Vector3 latForce;       // current lateral force exerted by tire onto the car
+    private Vector3 throttleForce;  // current throttle force exerted by tire onto the car
+    private Vector3 brakeForce;     // current brake force exerted by tire onto the car
 
     private Vector3 contactPoint;   // point of contact with ground
     private Vector3 contactNormal;  // normal at contact point
@@ -42,8 +44,68 @@ public class BSWheel : MonoBehaviour
     void Update()
     {
         RenderSuspension();
+        RenderForces();
         UpdateWheelPosition();
         UpdateWheelRotation();
+    }
+
+    /// <summary>
+    /// Render the suspension raycast for debugging
+    /// </summary>
+    private void RenderSuspension()
+    {
+        Vector3 rayOrigin = csWheel.position;
+        Vector3 rayDirection = csCar.TransformDirection(suspDirection);
+
+        if (PerformSuspensionRaycast(rayOrigin, rayDirection, out RaycastHit hit))
+        {
+            float springLen = hit.distance - (tireD / 2f);
+            Color springColor = Color.Lerp(Color.red, Color.yellow, springLen / suspRL);
+            Debug.DrawLine(rayOrigin, hit.point, springColor);
+        }
+        else
+        {
+            Debug.DrawLine(rayOrigin, rayOrigin + rayDirection * (suspRL + (tireD / 2f)), Color.red);
+        }
+    }
+
+
+    /// <summary>
+    /// Render the suspension and tire forces for debugging
+    /// </summary>
+    private void RenderForces()
+    {
+        if (!isGrounded) return;
+
+        Debug.DrawRay(csWheel.position, suspForce / carRB.mass, Color.green);
+        Debug.DrawRay(contactPoint, latForce / carRB.mass, Color.red);
+        Debug.DrawRay(csRolling.position, throttleForce / carRB.mass, Color.blue);
+        Debug.DrawRay(csRolling.position, brakeForce / carRB.mass, Color.yellow);
+    }
+
+
+    /// <summary>
+    /// Update visual wheel position by setting CS-Rolling local position
+    /// </summary>
+    private void UpdateWheelPosition()
+    {
+        csRolling.localPosition = suspDirection * currSuspLength;
+    }
+
+
+    /// <summary>
+    /// Update visual wheel rotation based on wheel linear velocity
+    /// </summary>
+    private void UpdateWheelRotation()
+    {
+        if (!isGrounded) return;
+
+        float wheelRadius = tireD / 2f;
+        float linearVelocity = Vector3.Dot(wheelVelocity, csRolling.right);
+        float angularVelocity = linearVelocity / wheelRadius;
+        float angularDisplacement = angularVelocity * Time.deltaTime;
+
+        wheelObj.localRotation *= Quaternion.Euler(0f, 0f, -angularDisplacement * Mathf.Rad2Deg);
     }
 
 
@@ -157,31 +219,8 @@ public class BSWheel : MonoBehaviour
 
             suspForce = springForce + dampingForce;
             carRB.AddForceAtPosition(suspForce, rayOrigin, ForceMode.Force);
-
-            Debug.DrawRay(rayOrigin, suspForce / carRB.mass, Color.green);
         }
         else isGrounded = false;
-    }
-
-
-    /// <summary>
-    /// Render the suspension raycast for debugging
-    /// </summary>
-    private void RenderSuspension()
-    {
-        Vector3 rayOrigin = csWheel.position;
-        Vector3 rayDirection = csCar.TransformDirection(suspDirection);
-
-        if (PerformSuspensionRaycast(rayOrigin, rayDirection, out RaycastHit hit))
-        {
-            float springLen = hit.distance - (tireD / 2f);
-            Color springColor = Color.Lerp(Color.red, Color.yellow, springLen / suspRL);
-            Debug.DrawLine(rayOrigin, hit.point, springColor);
-        }
-        else
-        {
-            Debug.DrawLine(rayOrigin, rayOrigin + rayDirection * (suspRL + (tireD / 2f)), Color.red);
-        }
     }
 
 
@@ -207,33 +246,6 @@ public class BSWheel : MonoBehaviour
             latForce = latForce.normalized * maxLateralForce;
 
         carRB.AddForceAtPosition(latForce, contactPoint);
-
-        Debug.DrawRay(contactPoint, latForce / carRB.mass, Color.red);
-    }
-
-    
-    /// <summary>
-    /// Update visual wheel position by setting CS-Rolling local position
-    /// </summary>
-    private void UpdateWheelPosition()
-    {
-        csRolling.localPosition = suspDirection * currSuspLength;
-    }
-
-
-    /// <summary>
-    /// Update visual wheel rotation based on wheel linear velocity
-    /// </summary>
-    private void UpdateWheelRotation()
-    {
-        if (!isGrounded) return;
-
-        float wheelRadius = tireD / 2f;
-        float linearVelocity = Vector3.Dot(wheelVelocity, csRolling.right);
-        float angularVelocity = linearVelocity / wheelRadius;
-        float angularDisplacement = angularVelocity * Time.deltaTime;
-
-        wheelObj.localRotation *= Quaternion.Euler(0f, 0f, -angularDisplacement * Mathf.Rad2Deg);
     }
 
 
@@ -270,11 +282,9 @@ public class BSWheel : MonoBehaviour
         if (currentSpeed >= topSpeed / 3.6f) return;
 
         float magnitude = input * maxForce;
-        Vector3 force = csRolling.right * magnitude;
-        force = Vector3.ProjectOnPlane(force, contactNormal);
-        Vector3 position = csRolling.position;
-        carRB.AddForceAtPosition(force, position);
-        Debug.DrawRay(position, force / carRB.mass, Color.blue);
+        throttleForce = csRolling.right * magnitude;
+        throttleForce = Vector3.ProjectOnPlane(throttleForce, contactNormal);
+        carRB.AddForceAtPosition(throttleForce, csRolling.position);
     }
 
 
@@ -294,17 +304,16 @@ public class BSWheel : MonoBehaviour
         else maxBrakeForce *= 0.8f;
 
         float magnitude = -input * maxBrakeForce;
-        Vector3 force = csWheel.right * magnitude;
-        force = Vector3.ProjectOnPlane(force, contactNormal);
-        Vector3 position = csRolling.position;
-        carRB.AddForceAtPosition(force, position);
-        Debug.DrawRay(position, force/carRB.mass, Color.yellow);
+        brakeForce = csWheel.right * magnitude;
+        brakeForce = Vector3.ProjectOnPlane(brakeForce, contactNormal);
+        carRB.AddForceAtPosition(brakeForce, csRolling.position);
     }
 
 
     public Vector3 GetSuspensionForce() {
         return suspForce;
     }
+
 
     public bool IsGrounded() {
         return isGrounded;
