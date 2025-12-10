@@ -50,9 +50,9 @@ public static class InputManagerConfigurator
     [MenuItem("Tools/Bit Shox/Configure Vehicle Controls")]
     public static void ConfigureVehicleControls()
     {
-        AddAxis("L-Stick-X", "Left Stick Horizontal", "", "", "", "", 3, 0.001f, 1, false, false, 2, 0);
-        AddAxis("R-Stick-X", "Right Stick Horizontal", "", "", "", "", 3, 0.001f, 1, false, false, 2, 3);
-        AddAxis("L-Trigger", "Left Trigger", "", "", "", "", 3, 0.001f, 1, false, false, 2, 8);
-        AddAxis("R-Trigger", "Right Trigger", "", "", "", "", 3, 0.001f, 1, false, false, 2, 9);
+        AddAxis("L-Stick-X", "Left Stick Horizontal", "", "", "", "", 3, 0.1f, 1, false, false, 2, 0);
+        AddAxis("R-Stick-X", "Right Stick Horizontal", "", "", "", "", 3, 0.1f, 1, false, false, 2, 3);
+        AddAxis("L-Trigger", "Left Trigger", "", "", "", "", 3, 0.01f, 1, false, false, 2, 8);
+        AddAxis("R-Trigger", "Right Trigger", "", "", "", "", 3, 0.01f, 1, false, false, 2, 9);
     }
 }
