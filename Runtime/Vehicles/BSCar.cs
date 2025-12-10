@@ -19,6 +19,7 @@ public class BSCar : MonoBehaviour
     public float track;
     public float carWeight;
     public float maxDriveForce;
+    public float maxBrakeForce;
     public float topSpeed;
     public enum DriveType { RWD, FWD, AWD }
     public DriveType driveType;
@@ -170,7 +171,7 @@ public class BSCar : MonoBehaviour
         {
             wheels[i].Steer(steerInput, steeringAngle);
             wheels[i].Throttle(throttleInput, driveType, maxDriveForce, topSpeed);
-            wheels[i].Brake(brakeInput);
+            wheels[i].Brake(brakeInput, maxBrakeForce);
         }
     }
     

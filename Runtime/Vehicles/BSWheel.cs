@@ -282,16 +282,16 @@ public class BSWheel : MonoBehaviour
     /// Apply brake to the wheel
     /// </summary>
     /// <param name="input">Trigger input in range [0, 1]</param>
-    public void Brake(float input)
+    /// <param name="maxBrakeForce">The maximum braking force applied by the wheel</param>
+    public void Brake(float input, float maxBrakeForce)
     {
         if (
             !isGrounded ||
             Vector3.Dot(wheelVelocity, csWheel.right) <= 0
         ) return;
 
-        float maxBrakeForce;
-        if (isFront) maxBrakeForce = 3000f;
-        else maxBrakeForce = 2500f;
+        if (isFront) maxBrakeForce *= 1.2f;
+        else maxBrakeForce *= 0.8f;
 
         float magnitude = -input * maxBrakeForce;
         Vector3 force = csWheel.right * magnitude;
