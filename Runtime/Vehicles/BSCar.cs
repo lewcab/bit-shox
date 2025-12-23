@@ -35,6 +35,9 @@ public class BSCar : MonoBehaviour
     public float tireWidth;
     public float tireDiameter;
 
+    // Technical Parameters
+    public int rayCount;
+
     // Private References
     private Transform car;
     private Rigidbody carRB;
@@ -69,6 +72,12 @@ public class BSCar : MonoBehaviour
         tireFrictionCoefficient = Mathf.Max(0.01f, tireFrictionCoefficient);
         tireWidth = Mathf.Max(0.01f, tireWidth);
         tireDiameter = Mathf.Max(0.01f, tireDiameter);
+        rayCount = Mathf.Clamp(rayCount, 1, 100);
+
+        if (rayCount % 2 == 0)
+        {
+            Debug.LogWarning("[BSCar] Ray Count should be an odd number.");
+        }
     }
 
 
@@ -104,7 +113,7 @@ public class BSCar : MonoBehaviour
     /// <summary>
     /// Initializes the four wheels of the car.
     /// </summary>
-    void InitWheels()
+    private void InitWheels()
     {
         wheels = new BSWheel[4];
 
@@ -124,7 +133,8 @@ public class BSCar : MonoBehaviour
                 track, wheelbase,
                 suspensionAngle, suspensionRestLength,
                 suspensionSpringCoefficient, suspensionDampingCoefficient,
-                tireFrictionCoefficient, tireWidth, tireDiameter
+                tireFrictionCoefficient, tireWidth, tireDiameter,
+                rayCount
             );
             wheels[i] = wheel;
         }

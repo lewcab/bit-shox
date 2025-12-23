@@ -27,6 +27,12 @@ public class BSWheel : MonoBehaviour
     private float suspK;            // suspension spring coefficient
     private float suspD;            // suspension damping coefficient
 
+    // Technical Properties
+    private int rayCount;           // number of rays for suspension
+    private Vector3[] rayOrigins;   // origins of rays for suspension
+    private RaycastHit[] rayHits;   // hits of rays for suspension
+    private bool[] isRayHit;        // whether each ray hit the ground
+
     // Physical Properties
     private bool isGrounded;        // true if wheel is in contact with ground
     private float currSuspLength;   // current length of suspension
@@ -54,18 +60,22 @@ public class BSWheel : MonoBehaviour
     /// </summary>
     private void RenderSuspension()
     {
-        Vector3 rayOrigin = csWheel.position;
         Vector3 rayDirection = csCar.TransformDirection(suspDirection);
+        for (int i = 0; i < rayCount; i++)
+        {
+            Vector3 rayOrigin = csCar.TransformPoint(rayOrigins[i]);
 
-        if (PerformSuspensionRaycast(rayOrigin, rayDirection, out RaycastHit hit))
-        {
-            float springLen = hit.distance - (tireD / 2f);
-            Color springColor = Color.Lerp(Color.red, Color.yellow, springLen / suspRL);
-            Debug.DrawLine(rayOrigin, hit.point, springColor);
-        }
-        else
-        {
-            Debug.DrawLine(rayOrigin, rayOrigin + rayDirection * (suspRL + (tireD / 2f)), Color.red);
+            if (PerformSuspensionRaycast(rayOrigin, rayDirection, out RaycastHit hit))
+            {
+                float compression = Mathf.Clamp(suspRL - hit.distance, 0f, suspRL);
+                float springForceMagnitude = suspK * compression;
+                Color springColor = Color.Lerp(Color.yellow, Color.red, springForceMagnitude / (suspK * suspRL));
+                Debug.DrawLine(rayOrigin, hit.point, springColor);
+            }
+            else
+            {
+                Debug.DrawLine(rayOrigin, rayOrigin + rayDirection * suspRL, Color.red);
+            }
         }
     }
 
@@ -119,7 +129,8 @@ public class BSWheel : MonoBehaviour
         float carWidth, float carLength,
         float suspensionAngle, float suspensionRestLength,
         float suspensionSpringCoefficient, float suspensionDampingCoefficient,
-        float tireFrictionCoefficient, float tireWidth, float tireDiameter
+        float tireFrictionCoefficient, float tireWidth, float tireDiameter,
+        int rayCount
     )
     {
         // Set parameters
@@ -145,6 +156,8 @@ public class BSWheel : MonoBehaviour
         tireW = tireWidth;
         tireD = tireDiameter;
 
+        this.rayCount = rayCount;
+
         suspDirection = Quaternion.Euler(suspAngle, 0, 0) * Vector3.down;
 
         // Initialize CS-Wheel, given by the xOffset and yOffset
@@ -164,6 +177,9 @@ public class BSWheel : MonoBehaviour
 
         // Initialize the wheel visuals
         InitializeWheelObj();
+
+        // Initialize ray origins
+        InitializeRayOrigins();
     }
 
 
@@ -183,6 +199,35 @@ public class BSWheel : MonoBehaviour
 
 
     /// <summary>
+    /// Initialize the ray origins for suspension raycasts
+    /// </summary>
+    private void InitializeRayOrigins()
+    {
+        rayOrigins = new Vector3[rayCount];
+        rayHits = new RaycastHit[rayCount];
+        isRayHit = new bool[rayCount];
+
+        if (rayCount == 1)
+        {
+            rayOrigins[0] = csWheel.localPosition + (-csWheel.up * (tireD / 2f));
+        }
+        else
+        {
+            Vector3 circleNormal = csWheel.forward;
+            float circleRadius = tireD / 2f;
+            Vector3 down = -csWheel.up;
+
+            for (int i = 0; i < rayCount; i++)
+            {
+                float angle = (180f / rayCount) * i - 72f;
+                Quaternion rotation = Quaternion.AngleAxis(angle, circleNormal);
+                Vector3 pointOnCircle = rotation * (down * circleRadius);
+                rayOrigins[i] = csWheel.localPosition + pointOnCircle;
+            }
+        }
+    }
+
+    /// <summary>
     /// Perform a raycast representing the suspension
     /// </summary>
     /// <param name="origin">Base of the suspension strut</param>
@@ -191,7 +236,7 @@ public class BSWheel : MonoBehaviour
     /// <returns>true if ray makes contact, false otherwise</returns>
     private bool PerformSuspensionRaycast(Vector3 origin, Vector3 direction, out RaycastHit hit)
     {
-        return Physics.Raycast(origin, direction, out hit, suspRL + (tireD/2f));
+        return Physics.Raycast(origin, direction, out hit, suspRL);
     }
 
 
@@ -200,27 +245,65 @@ public class BSWheel : MonoBehaviour
     /// </summary>
     public void UpdateSuspensionForces()
     {
-        Vector3 rayOrigin = csWheel.position;
+        // Perform all raycasts
         Vector3 rayDirection = csCar.TransformDirection(suspDirection);
-
-        if (PerformSuspensionRaycast(rayOrigin, rayDirection, out RaycastHit hit))
+        for (int i = 0; i < rayCount; i++)
         {
-            isGrounded = true;
-
-            currSuspLength = hit.distance - (tireD / 2f);
-            float compression = Mathf.Clamp(suspRL - currSuspLength, 0, suspRL);
-            float suspSpeed = (currSuspLength - prevSuspLength) / Time.fixedDeltaTime;
-            prevSuspLength = currSuspLength;
-            contactPoint = hit.point;
-            contactNormal = hit.normal;
-
-            Vector3 springForce = suspK * compression * contactNormal;
-            Vector3 dampingForce = -suspD * suspSpeed * contactNormal;
-
-            suspForce = springForce + dampingForce;
-            carRB.AddForceAtPosition(suspForce, rayOrigin, ForceMode.Force);
+            Vector3 rayOrigin = csCar.TransformPoint(rayOrigins[i]);
+            isRayHit[i] = PerformSuspensionRaycast(rayOrigin, rayDirection, out rayHits[i]);
         }
-        else isGrounded = false;
+
+        // Check if no hits, exit early
+        if (!AnyRayHit())
+        {
+            isGrounded = false;
+            currSuspLength = suspRL;
+            prevSuspLength = suspRL;
+            suspForce = Vector3.zero;
+            return;
+        }
+        isGrounded = true;
+
+        // Find max compression (min hit.distance) from all rays that hit
+        currSuspLength = suspRL;
+        for (int i = 0; i < rayCount; i++)
+        {
+            if (isRayHit[i])
+            {
+                float hitDistance = rayHits[i].distance;
+                if (hitDistance < currSuspLength)
+                {
+                    currSuspLength = hitDistance;
+                    contactPoint = rayHits[i].point;
+                    contactNormal = rayHits[i].normal;
+                }
+            }
+        }
+
+        // Calculate suspension force based on max compression
+        float compression = Mathf.Clamp(suspRL - currSuspLength, 0, suspRL);
+        float suspSpeed = (currSuspLength - prevSuspLength) / Time.fixedDeltaTime;
+        prevSuspLength = currSuspLength;
+
+        Vector3 springForce = suspK * compression * contactNormal;
+        Vector3 dampingForce = -suspD * suspSpeed * contactNormal;
+
+        suspForce = springForce + dampingForce;
+        carRB.AddForceAtPosition(suspForce, csWheel.position, ForceMode.Force);
+    }
+
+
+    /// <summary>
+    /// Check if any suspension ray hit the ground
+    /// </summary>
+    /// <returns>true if any ray hit, false otherwise</returns>
+    private bool AnyRayHit()
+    {
+        for (int i = 0; i < rayCount; i++)
+        {
+            if (isRayHit[i]) return true;
+        }
+        return false;
     }
 
 

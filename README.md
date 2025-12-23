@@ -44,6 +44,7 @@ If you want to setup a car from scratch, do the following:
 | **Tire Friction Coefficient** | The friction coefficient of the tires. |
 | **Tire Width** | The width of the tires. |
 | **Tire Diameter** | The diameter of the tires. |
+| **Ray Count** | The number of rays used for suspension simulation per wheel. |
 
 
 ## Project Structure
