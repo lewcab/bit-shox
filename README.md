@@ -20,6 +20,32 @@ If you want to setup a car from scratch, do the following:
 
 **Note:** The `BSCar` script does not have its own camera or camera controller by default. You will need to add your own.
 
+### 🪛 `BSCar` Parameters
+
+| Parameter | Description |
+|-|-|
+| **Is Log Inputs** | The mass of the car in kilograms. |
+| **Is Keyboard Control** | If enabled, the car will respond to keyboard inputs. |
+| **Car Shell Prefab** | The visual representation of the car body. |
+| **Wheel Prefab** | The prefab used for the car's wheels. |
+| **Wheelbase** | The distance between the front and rear wheels of the car. |
+| **Track** | The distance between the left and right wheels of the car. |
+| **Car Weight** | The mass of the car in kilograms. |
+| **Max Drive Force** | The maximum force the car's engine can apply to the wheels. |
+| **Brake Force** | The maximum braking force that can be applied to the wheels. |
+| **Top Speed** | The maximum speed the car can reach in meters km/h. |
+| **Drive Type** | The type of drive system (e.g., FWD, RWD, AWD). |
+| **Steering Angle** | The maximum angle the front wheels can turn for steering. |
+| **Suspension Depth** | The distance of the suspensions base from the floor of the car. |
+| **Suspension Angle** | The angle at which the suspension arms are positioned. |
+| **Suspension Rest Length** | The length of the suspension when at rest. |
+| **Suspension Spring Coefficient** | The stiffness of the suspension springs. |
+| **Suspension Damping Coefficient** | The damping factor of the suspension. |
+| **Tire Friction Coefficient** | The friction coefficient of the tires. |
+| **Tire Width** | The width of the tires. |
+| **Tire Diameter** | The diameter of the tires. |
+
+
 ## Project Structure
 
 - `Editor`: Contains all the editor scripts, primarily used for setting up controls.
