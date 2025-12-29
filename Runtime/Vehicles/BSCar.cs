@@ -51,6 +51,9 @@ public class BSCar : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// Validate and clamp parameters
+    /// </summary>
     void OnValidate()
     {
         if (wheelPrefab == null)
@@ -90,7 +93,7 @@ public class BSCar : MonoBehaviour
 
         float bodyThickness = 0.05f;
         body.transform.SetParent(car, false);
-        body.transform.localScale = new(wheelbase, bodyThickness, track);
+        body.transform.localScale = new Vector3(wheelbase, bodyThickness, track);
         body.transform.localPosition = new Vector3(0f, (bodyThickness/2) - suspensionDepth, 0f);
         body.layer = LayerMask.NameToLayer("Ignore Raycast");
 
@@ -138,14 +141,21 @@ public class BSCar : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// Simulation update loop
+    /// </summary>
     void FixedUpdate()
     {
         if (isLogInputs) 
             LogInputs();
 
         HandleInput();
-        foreach (BSWheel w in wheels) w.UpdateSuspensionForces();
-        foreach (BSWheel w in wheels) w.UpdateTireForces();
+
+        foreach (BSWheel w in wheels) 
+            w.UpdateSuspensionForces();
+            
+        foreach (BSWheel w in wheels) 
+            w.UpdateTireForces();
     }
 
 
@@ -161,8 +171,10 @@ public class BSCar : MonoBehaviour
         if (isKeyboardControl)
         {
             steerInput = 0f;
-            if (Input.GetKey(KeyCode.A)) steerInput = -1f;
-            else if (Input.GetKey(KeyCode.D)) steerInput = 1f;
+            if (Input.GetKey(KeyCode.A)) 
+                steerInput = -1f;
+            else if (Input.GetKey(KeyCode.D)) 
+                steerInput = 1f;
 
             throttleInput = Input.GetKey(KeyCode.W) ? 1f : 0f;
             brakeInput = Input.GetKey(KeyCode.S) ? 1f : 0f;
@@ -186,22 +198,22 @@ public class BSCar : MonoBehaviour
     /// <summary>
     /// Determines if the wheel is a front wheel based on its index.
     /// </summary>
-    /// <param name="wheel_i">Index of the wheel</param>
+    /// <param name="wheelIdx">Index of the wheel</param>
     /// <returns>true if wheel is front wheel, false otherwise</returns>
-    private bool IsFrontWheel(int wheel_i)
+    private bool IsFrontWheel(int wheelIdx)
     {
-        return wheel_i < 2;
+        return wheelIdx < 2;
     }
 
     
     /// <summary>
     /// Determines if the wheel is a left wheel based on its index.
     /// </summary>
-    /// <param name="wheel_i">Index of the wheel</param>
+    /// <param name="wheelIdx">Index of the wheel</param>
     /// <returns>true if wheel is left wheel, false otherwise</returns>
-    private bool IsLeftWheel(int wheel_i)
+    private bool IsLeftWheel(int wheelIdx)
     {
-        return wheel_i % 2 == 0;
+        return wheelIdx % 2 == 0;
     }
 
 

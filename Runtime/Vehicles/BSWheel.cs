@@ -45,6 +45,11 @@ public class BSWheel : MonoBehaviour
     private Vector3 contactNormal;  // normal at contact point
     private Vector3 wheelVelocity;  // velocity of the wheel at contact point
 
+    // Constants
+    private const float MPS_TO_KPH = 3.6f;
+    private const float FRONT_BRAKE_MULTIPLIER = 1.2f;
+    private const float REAR_BRAKE_MULTIPLIER = 0.8f;
+
 
     void Update()
     {
@@ -53,6 +58,7 @@ public class BSWheel : MonoBehaviour
         UpdateWheelPosition();
         UpdateWheelRotation();
     }
+
 
     /// <summary>
     /// Render the suspension raycast for debugging
@@ -214,16 +220,18 @@ public class BSWheel : MonoBehaviour
             float circleRadius = tireD / 2f;
             Vector3 down = -csWheel.up;
 
-            float degOffset = 180f / (rayCount - 1);
+            float degDelta = 180f / (rayCount - 1);
+            float degOffset = 90f;
             for (int i = 0; i < rayCount; i++)
             {
-                float angle = degOffset * i - 90f; 
+                float angle = degDelta * i - degOffset; 
                 Quaternion rotation = Quaternion.AngleAxis(angle, circleNormal);
                 Vector3 pointOnCircle = rotation * (down * circleRadius);
                 rayOrigins[i] = pointOnCircle;
             }
         }
     }
+
 
     /// <summary>
     /// Perform a raycast representing the suspension
@@ -360,7 +368,7 @@ public class BSWheel : MonoBehaviour
 
         float currentSpeed = carRB.velocity.magnitude;
 
-        if (currentSpeed >= topSpeed / 3.6f) return;
+        if (currentSpeed >= topSpeed / MPS_TO_KPH) return;
 
         float magnitude = input * maxForce;
         throttleForce = csRolling.right * magnitude;
@@ -381,22 +389,12 @@ public class BSWheel : MonoBehaviour
             Vector3.Dot(wheelVelocity, csWheel.right) <= 0
         ) return;
 
-        if (isFront) maxBrakeForce *= 1.2f;
-        else maxBrakeForce *= 0.8f;
+        if (isFront) maxBrakeForce *= FRONT_BRAKE_MULTIPLIER;
+        else maxBrakeForce *= REAR_BRAKE_MULTIPLIER;
 
         float magnitude = -input * maxBrakeForce;
         brakeForce = csWheel.right * magnitude;
         brakeForce = Vector3.ProjectOnPlane(brakeForce, contactNormal);
         carRB.AddForceAtPosition(brakeForce, csRolling.position);
-    }
-
-
-    public Vector3 GetSuspensionForce() {
-        return suspForce;
-    }
-
-
-    public bool IsGrounded() {
-        return isGrounded;
     }
 }
