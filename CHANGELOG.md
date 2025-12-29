@@ -15,9 +15,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 - Placeholder for future fixes.
 
-## [0.1.0] - 2025-12-06
+## [0.1.0] - 2025-12-28
+
 ### Added
-- Initial release.
+- `BSCar` class, representing a car.
+- `BSWheel` class, representing suspension and wheel setup.
+- Basic physics and movement mechanics.
+- Simple user controls for driving the car.
+- Handful of sample car models and scenes.
+- Documentation for getting started with the package.
 
 [UNRELEASED]: https://github.com/lewcab/bit-shox
-[0.1.0]: https://github.com/lewcab/bit-shox/
+[0.1.0]: https://github.com/lewcab/bit-shox/releases/tag/v0.1.0
