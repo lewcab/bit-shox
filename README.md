@@ -37,7 +37,6 @@ If you want to setup a car from scratch, do the following:
 | **Drive Type** | The type of drive system (e.g., FWD, RWD, AWD). |
 | **Steering Angle** | The maximum angle the front wheels can turn for steering. |
 | **Suspension Depth** | The distance of the suspensions base from the floor of the car. |
-| **Suspension Angle** | The angle at which the suspension arms are positioned. |
 | **Suspension Rest Length** | The length of the suspension when at rest. |
 | **Suspension Spring Coefficient** | The stiffness of the suspension springs. |
 | **Suspension Damping Coefficient** | The damping factor of the suspension. |
