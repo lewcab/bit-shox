@@ -27,7 +27,6 @@ public class BSCar : MonoBehaviour
     // Wheel & Suspension Parameters
     public float steeringAngle;
     public float suspensionDepth;
-    public float suspensionAngle;
     public float suspensionRestLength;
     public float suspensionSpringCoefficient;
     public float suspensionDampingCoefficient;
@@ -65,7 +64,6 @@ public class BSCar : MonoBehaviour
         carWeight = Mathf.Max(0.1f, carWeight);
         steeringAngle = Mathf.Clamp(steeringAngle, 0f, 90f);
         suspensionDepth = Mathf.Max(0f, suspensionDepth);
-        suspensionAngle = Mathf.Clamp(suspensionAngle, 0f, 90f);
         suspensionRestLength = Mathf.Max(0.1f, suspensionRestLength);
         suspensionSpringCoefficient = Mathf.Max(0.01f, suspensionSpringCoefficient);
         suspensionDampingCoefficient = Mathf.Max(0.01f, suspensionDampingCoefficient);
@@ -131,8 +129,7 @@ public class BSCar : MonoBehaviour
                 wheelPrefab,
                 IsFrontWheel(i), IsLeftWheel(i),
                 track, wheelbase,
-                suspensionAngle, suspensionRestLength,
-                suspensionSpringCoefficient, suspensionDampingCoefficient,
+                suspensionRestLength, suspensionSpringCoefficient, suspensionDampingCoefficient,
                 tireFrictionCoefficient, tireWidth, tireDiameter,
                 rayCount
             );

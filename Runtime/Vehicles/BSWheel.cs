@@ -22,7 +22,6 @@ public class BSWheel : MonoBehaviour
 
     // Suspension Properties
     private Vector3 suspDirection;  // direction of suspension towards ground
-    private float suspAngle;        // suspension offset
     private float suspRL;           // suspension resting length
     private float suspK;            // suspension spring coefficient
     private float suspD;            // suspension damping coefficient
@@ -63,7 +62,7 @@ public class BSWheel : MonoBehaviour
         Vector3 rayDirection = csCar.TransformDirection(suspDirection);
         for (int i = 0; i < rayCount; i++)
         {
-            Vector3 rayOrigin = csCar.TransformPoint(rayOrigins[i]);
+            Vector3 rayOrigin = csWheel.TransformPoint(rayOrigins[i]);
 
             if (PerformSuspensionRaycast(rayOrigin, rayDirection, out RaycastHit hit))
             {
@@ -127,8 +126,7 @@ public class BSWheel : MonoBehaviour
         Transform wheelPrefab,
         bool front, bool left,
         float carWidth, float carLength,
-        float suspensionAngle, float suspensionRestLength,
-        float suspensionSpringCoefficient, float suspensionDampingCoefficient,
+        float suspensionRestLength, float suspensionSpringCoefficient, float suspensionDampingCoefficient,
         float tireFrictionCoefficient, float tireWidth, float tireDiameter,
         int rayCount
     )
@@ -145,7 +143,6 @@ public class BSWheel : MonoBehaviour
         float xOffset = carLength / 2f * (isFront ? 1f : -1f);
         float zOffset = carWidth / 2f * (isLeft ? 1f : -1f);
 
-        suspAngle = suspensionAngle * (isLeft ? -1f : 1f);
         suspRL = suspensionRestLength;
         currSuspLength = suspRL;
         prevSuspLength = suspRL;
@@ -158,7 +155,7 @@ public class BSWheel : MonoBehaviour
 
         this.rayCount = rayCount;
 
-        suspDirection = Quaternion.Euler(suspAngle, 0, 0) * Vector3.down;
+        suspDirection = Vector3.down;
 
         // Initialize CS-Wheel, given by the xOffset and yOffset
         csWheel = GetComponent<Transform>();
@@ -217,12 +214,13 @@ public class BSWheel : MonoBehaviour
             float circleRadius = tireD / 2f;
             Vector3 down = -csWheel.up;
 
+            float degOffset = 180f / (rayCount - 1);
             for (int i = 0; i < rayCount; i++)
             {
-                float angle = (180f / rayCount) * i - 72f;
+                float angle = degOffset * i - 90f; 
                 Quaternion rotation = Quaternion.AngleAxis(angle, circleNormal);
                 Vector3 pointOnCircle = rotation * (down * circleRadius);
-                rayOrigins[i] = csWheel.localPosition + pointOnCircle;
+                rayOrigins[i] = pointOnCircle;
             }
         }
     }
@@ -249,7 +247,7 @@ public class BSWheel : MonoBehaviour
         Vector3 rayDirection = csCar.TransformDirection(suspDirection);
         for (int i = 0; i < rayCount; i++)
         {
-            Vector3 rayOrigin = csCar.TransformPoint(rayOrigins[i]);
+            Vector3 rayOrigin = csWheel.TransformPoint(rayOrigins[i]);
             isRayHit[i] = PerformSuspensionRaycast(rayOrigin, rayDirection, out rayHits[i]);
         }
 
@@ -341,7 +339,7 @@ public class BSWheel : MonoBehaviour
         if (!isFront) return;
 
         float steerAngle = input * maxAngle;
-        csRolling.localRotation = Quaternion.Euler(0, steerAngle, 0);
+        csWheel.localRotation = Quaternion.Euler(0, steerAngle, 0);
     }
 
 
