@@ -27,7 +27,8 @@ public class BSWheel : MonoBehaviour
     private float suspD;            // suspension damping coefficient
 
     // Technical Properties
-    private int rayCount;           // number of rays for suspension
+    private int perSideRayCount;    // number of rays for suspension
+    private int totalRayCount;      // total number of rays for suspension
     private Vector3[] rayOrigins;   // origins of rays for suspension
     private RaycastHit[] rayHits;   // hits of rays for suspension
     private bool[] isRayHit;        // whether each ray hit the ground
@@ -66,7 +67,7 @@ public class BSWheel : MonoBehaviour
     private void RenderSuspension()
     {
         Vector3 rayDirection = csCar.TransformDirection(suspDirection);
-        for (int i = 0; i < rayCount; i++)
+        for (int i = 0; i < totalRayCount; i++)
         {
             Vector3 rayOrigin = csWheel.TransformPoint(rayOrigins[i]);
 
@@ -159,7 +160,8 @@ public class BSWheel : MonoBehaviour
         tireW = tireWidth;
         tireD = tireDiameter;
 
-        this.rayCount = rayCount;
+        perSideRayCount = rayCount;
+        totalRayCount = perSideRayCount * 2;
 
         suspDirection = Vector3.down;
 
@@ -206,13 +208,14 @@ public class BSWheel : MonoBehaviour
     /// </summary>
     private void InitializeRayOrigins()
     {
-        rayOrigins = new Vector3[rayCount];
-        rayHits = new RaycastHit[rayCount];
-        isRayHit = new bool[rayCount];
+        rayOrigins = new Vector3[totalRayCount];
+        rayHits = new RaycastHit[totalRayCount];
+        isRayHit = new bool[totalRayCount];
 
-        if (rayCount == 1)
+        if (perSideRayCount == 1)
         {
             rayOrigins[0] = csWheel.localPosition + (-csWheel.up * (tireD / 2f));
+            rayOrigins[1] = rayOrigins[0] + (csWheel.forward * tireW);
         }
         else
         {
@@ -220,14 +223,18 @@ public class BSWheel : MonoBehaviour
             float circleRadius = tireD / 2f;
             Vector3 down = -csWheel.up;
 
-            float degDelta = 180f / (rayCount - 1);
+            float degDelta = 180f / (perSideRayCount - 1);
             float degOffset = 90f;
-            for (int i = 0; i < rayCount; i++)
+            for (int i = 0; i < perSideRayCount; i++)
             {
                 float angle = degDelta * i - degOffset; 
                 Quaternion rotation = Quaternion.AngleAxis(angle, circleNormal);
                 Vector3 pointOnCircle = rotation * (down * circleRadius);
                 rayOrigins[i] = pointOnCircle;
+                if (isLeft)
+                    rayOrigins[i+perSideRayCount] = pointOnCircle + (csWheel.forward * tireW);
+                else
+                    rayOrigins[i+perSideRayCount] = pointOnCircle - (csWheel.forward * tireW);
             }
         }
     }
@@ -253,7 +260,7 @@ public class BSWheel : MonoBehaviour
     {
         // Perform all raycasts
         Vector3 rayDirection = csCar.TransformDirection(suspDirection);
-        for (int i = 0; i < rayCount; i++)
+        for (int i = 0; i < totalRayCount; i++)
         {
             Vector3 rayOrigin = csWheel.TransformPoint(rayOrigins[i]);
             isRayHit[i] = PerformSuspensionRaycast(rayOrigin, rayDirection, out rayHits[i]);
@@ -272,7 +279,7 @@ public class BSWheel : MonoBehaviour
 
         // Find max compression (min hit.distance) from all rays that hit
         currSuspLength = suspRL;
-        for (int i = 0; i < rayCount; i++)
+        for (int i = 0; i < totalRayCount; i++)
         {
             if (isRayHit[i])
             {
@@ -305,7 +312,7 @@ public class BSWheel : MonoBehaviour
     /// <returns>true if any ray hit, false otherwise</returns>
     private bool AnyRayHit()
     {
-        for (int i = 0; i < rayCount; i++)
+        for (int i = 0; i < totalRayCount; i++)
         {
             if (isRayHit[i]) return true;
         }
