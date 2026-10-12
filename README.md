@@ -2,6 +2,8 @@
 
 A realistic vehicle simulation system in Unity. Bit Shox was developed in Unity 2022.3, and has not been tested in more recent versions of Unity (ex. 2023.x, 6000.x).
 
+![](https://github.com/lewcab/bit-shox/blob/main/Documentation~/bit-shox.gif)
+
 ## ⚙️ Startup Guide
 
 First, you must ensure the controls are setup properly. This can be done in Unity, by selecting `Tools > Bit Shox > Configure Vehicle Controls`.
